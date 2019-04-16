@@ -23,6 +23,14 @@ import static edu.miracostacollege.cs134.theescape.model.Direction.LEFT;
 import static edu.miracostacollege.cs134.theescape.model.Direction.RIGHT;
 import static edu.miracostacollege.cs134.theescape.model.Direction.UP;
 
+/**
+ * The Escape - game to run away from zombie using touch gestures
+ *
+ * Dennis La
+ * CS134
+ *
+ */
+
 public class MainActivity extends AppCompatActivity implements GestureDetector.OnGestureListener {
 
     private int wins = 0;
@@ -50,6 +58,10 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
     private Player player;
     private Zombie zombie;
 
+    private Handler handler;
+    private Animation rotateAnim;
+    private Animation shakeAnim;
+
     final int gameBoard[][] = {
             {OBST, OBST, OBST, OBST, OBST, OBST, OBST, OBST},
             {OBST, FREE, FREE, FREE, FREE, FREE, OBST, OBST},
@@ -68,9 +80,14 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        handler = new Handler();
+
         boardLinearLayout = findViewById(R.id.boardLinearLayout);
         winsTextView = findViewById(R.id.winsTextView);
         lossesTextView = findViewById(R.id.lossesTextView);
+
+        winsTextView.setText(getString(R.string.win, wins));
+        lossesTextView.setText(getString(R.string.losses, losses));
 
         gestureDetector = new GestureDetector(this, this);
         startNewGame();
@@ -119,24 +136,25 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
 
         zombie = new Zombie(ZOMBIE_ROW, ZOMBIE_COL);
         viewBoard[ZOMBIE_ROW][ZOMBIE_COL].setImageResource(R.drawable.zombie);
-        //TODO: Loop through the viewBoard and initialize each of the ImageViews
-        //TODO: to the children of the LinearLayouts
-        //TODO: Use the gameBoard to determine which image to assign:
 
-        //TODO: OBST = R.drawable.obstacle
-        //TODO: EXIT = R.drawable.exit
-        //TODO: FREE = null (no image to load)
+        //done: Loop through the viewBoard and initialize each of the ImageViews
+        //done: to the children of the LinearLayouts
+        //done: Use the gameBoard to determine which image to assign:
 
-        //TODO: Instantiate a new Player object at PLAYER_ROW, PLAYER_COL
-        //TODO: Set the imageView at that position to R.drawable.player
+        //done: OBST = R.drawable.obstacle
+        //done: EXIT = R.drawable.exit
+        //done: FREE = null (no image to load)
 
-        //TODO: Instantiate a new Zombie object at ZOMBIE_ROW, ZOMBIE_COL
-        //TODO: Set the imageView at that position to R.drawable.zombie
+        //done: Instantiate a new Player object at PLAYER_ROW, PLAYER_COL
+        //done: Set the imageView at that position to R.drawable.player
+
+        //done: Instantiate a new Zombie object at ZOMBIE_ROW, ZOMBIE_COL
+        //done: Set the imageView at that position to R.drawable.zombie
     }
 
     private void movePlayer(float velocityX, float velocityY) {
 
-        //TODO: Set the player's current image view drawable to null
+        //done: Set the player's current image view drawable to null
         viewBoard[player.getRow()][player.getCol()].setImageDrawable(null);
 
         float absX = Math.abs(velocityX);
@@ -170,48 +188,86 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
         player.move(gameBoard, direction);
 
         viewBoard[player.getRow()][player.getCol()].setImageResource(R.drawable.male_player);
-        //TODO: Determine the direction of the fling (based on velocityX and velocityY)
-        //TODO: The velocity must exceed FLING_THRESHOLD to count (otherwise, it's not really a move)
-        //TODO: Move the player
-        //TODO: Set the player's current image view to R.drawable.player after the move
+        //done: Determine the direction of the fling (based on velocityX and velocityY)
+        //done: The velocity must exceed FLING_THRESHOLD to count (otherwise, it's not really a move)
+        //done: Move the player
+        //done: Set the player's current image view to R.drawable.player after the move
     }
 
     private void moveZombie() {
-        //TODO: Set the zombie's current image view drawable to null
+        //done: Set the zombie's current image view drawable to null
         viewBoard[zombie.getRow()][zombie.getCol()].setImageDrawable(null);
-        //TODO: Move the zombie
+        //done: Move the zombie
         zombie.move(gameBoard, player.getRow(), player.getCol());
-        //TODO: Set the zombie's current image view to R.drawable.zombie after the move
+        //done: Set the zombie's current image view to R.drawable.zombie after the move
         viewBoard[zombie.getRow()][zombie.getCol()].setImageResource(R.drawable.zombie);
     }
 
     private void determineOutcome() {
-        //TODO: Determine the outcome of the game (win or loss)
-        //TODO: It's a win if the player's row/col is the same as the exit row/col
-        //TODO: Call the handleWin() method
+        //done: Determine the outcome of the game (win or loss)
+        //done: It's a win if the player's row/col is the same as the exit row/col
+        //done: Call the handleWin() method
+        if(player.getRow() == EXIT_ROW && player.getCol() == EXIT_COL)
+        {
+            handleWin();
+        }
 
-        //TODO: It's a loss if the player's row/col is the same as the zombie's row/col
-        //TODO: Call the handleLoss() method
+        //done: It's a loss if the player's row/col is the same as the zombie's row/col
+        //done: Call the handleLoss() method
+        else if(player.getRow() == zombie.getRow() && player.getCol() == zombie.getCol())
+        {
+            handleLoss();
+        }
 
-        //TODO: Otherwise, do nothing, just return.
+        //done: Otherwise, do nothing, just return.
     }
 
     private void handleWin()
     {
-        //TODO: Implement the handleWin() method by accomplishing the following:
-        //TODO: Increment the wins
-        //TODO: Set the imageView (at the zombie's row/col) to the R.drawable.bunny
-        //TODO: Start an animation
-        //TODO: Wait 2 seconds, then start a new game
+        //done: Implement the handleWin() method by accomplishing the following:
+        //done: Increment the wins
+        wins++;
+        winsTextView.setText(getString(R.string.win, wins));
+
+        //done: Set the imageView (at the zombie's row/col) to the R.drawable.bunny
+        viewBoard[zombie.getRow()][zombie.getCol()].setImageResource(R.drawable.bunny);
+
+        //done: Start an animation
+        rotateAnim = AnimationUtils.loadAnimation(this, R.anim.rotate_anim);
+
+        viewBoard[player.getRow()][player.getCol()].startAnimation(rotateAnim);
+
+        //done: Wait 2 seconds, then start a new game
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                startNewGame();
+            }
+        }, 2000);
     }
 
     private void handleLoss()
     {
-        //TODO: Implement the handleLoss() method by accomplishing the following:
-        //TODO: Increment the losses
-        //TODO: Set the imageView (at the player's row/col) to the R.drawable.blood
-        //TODO: Start an animation
-        //TODO: Wait 2 seconds, then start a new game
+        //done: Implement the handleLoss() method by accomplishing the following:
+        //done: Increment the losses
+        losses++;
+        lossesTextView.setText(getString(R.string.losses, losses));
+
+        //done: Set the imageView (at the player's row/col) to the R.drawable.blood
+        viewBoard[player.getRow()][player.getCol()].setImageResource(R.drawable.blood);
+
+        //done: Start an animation
+        shakeAnim = AnimationUtils.loadAnimation(this, R.anim.shake_anim);
+
+        viewBoard[player.getRow()][player.getCol()].startAnimation(shakeAnim);
+
+        //done: Wait 2 seconds, then start a new game
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                startNewGame();
+            }
+        }, 2000);
     }
 
 
